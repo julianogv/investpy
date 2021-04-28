@@ -347,7 +347,8 @@ def get_stock_recent_data(stock, country, as_json=False, order='ascending', inte
         raise RuntimeError("ERR#0004: data retrieval error while scraping.")
 
 
-def get_stock_historical_data(stock, country, from_date, to_date, as_json=False, order='ascending', interval='Daily'):
+def get_stock_historical_data(stock, country, from_date, to_date, id_: int, name: str, stock_currency: str,
+                              as_json=False, order='ascending', interval='Daily'):
     """
     This function retrieves historical data from the introduced stock from Investing.com. So on, the historical data
     of the introduced stock from the specified country in the specified date range will be retrieved and returned as
@@ -420,6 +421,7 @@ def get_stock_historical_data(stock, country, from_date, to_date, as_json=False,
 
     if not stock:
         raise ValueError("ERR#0013: stock parameter is mandatory and must be a valid stock symbol.")
+    symbol = stock
 
     if not isinstance(stock, str):
         raise ValueError("ERR#0027: stock argument needs to be a str.")
@@ -495,34 +497,6 @@ def get_stock_historical_data(stock, country, from_date, to_date, as_json=False,
     interval_counter = 0
 
     data_flag = False
-
-    resource_package = 'investpy'
-    resource_path = '/'.join((('resources', 'stocks.csv')))
-    if pkg_resources.resource_exists(resource_package, resource_path):
-        stocks = pd.read_csv(pkg_resources.resource_filename(resource_package, resource_path), keep_default_na=False)
-    else:
-        raise FileNotFoundError("ERR#0056: stocks file not found or errored.")
-
-    if stocks is None:
-        raise IOError("ERR#0001: stocks object not found or unable to retrieve.")
-
-    country = unidecode(country.strip().lower())
-
-    if country not in get_stock_countries():
-        raise RuntimeError("ERR#0034: country " + country.lower() + " not found, check if it is correct.")
-
-    stocks = stocks[stocks['country'] == country]
-
-    stock = unidecode(stock.strip().lower())
-
-    if stock not in list(stocks['symbol'].apply(unidecode).str.lower()):
-        raise RuntimeError("ERR#0018: stock " + stock + " not found, check if it is correct.")
-
-    symbol = stocks.loc[(stocks['symbol'].apply(unidecode).str.lower() == stock).idxmax(), 'symbol']
-    id_ = stocks.loc[(stocks['symbol'].apply(unidecode).str.lower() == stock).idxmax(), 'id']
-    name = stocks.loc[(stocks['symbol'].apply(unidecode).str.lower() == stock).idxmax(), 'name']
-
-    stock_currency = stocks.loc[(stocks['symbol'].apply(unidecode).str.lower() == stock).idxmax(), 'currency']
 
     final = list()
 
